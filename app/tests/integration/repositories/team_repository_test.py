@@ -5,10 +5,14 @@ from app.adapters.database.postgres.models.user_model import (
     team_request_association,
     user_team_association,
 )
-from app.domain.dtos.team_dto import GetUserTeamResponseDTO
+from app.domain.dtos.team_dto import (
+    GetUserTeamResponseDTO,
+    UploadTeamRepositoryLinkInputDTO,
+)
 from app.domain.enums import TeamRequestStatus
 from app.domain.exceptions.base_exceptions import TeamNotFoundException
 from app.ports.driving.team_interface import TeamQueryInterface
+from pydantic import ValidationError
 import pytest # type: ignore
 from app.adapters.database.postgres.repositories.team_repository import TeamRepository
 
@@ -28,6 +32,77 @@ def test_get_active_users_from_migration(repo: TeamQueryInterface) -> None:
     assert "daniel.bautista.test@unet.edu.ve" in emails
     assert "douglas.moreno.test@unet.edu.ve" in emails
     assert "maria.ballesteros@unet.edu.ve" not in emails
+
+
+def test_list_teams_table_returns_frontend_columns(db_session) -> None:
+    team = db_session.query(Team).filter_by(name="UNET Cyber-Warriors").first()
+    leader = db_session.query(User).filter_by(email="daniel.bautista.test@unet.edu.ve").first()
+
+    assert team is not None, "The migration did not load the expected team"
+    assert leader is not None, "The migration did not load the user Daniel"
+
+    original_status = team.status
+    original_cloud_repo_link = team.cloud_repo_link
+    original_score = team.score
+    original_feedback = team.feedback
+    original_assigned_evaluator_id = team.assigned_evaluator_id
+
+    try:
+        team.status = 2
+        team.cloud_repo_link = "https://github.com/example/project"
+        team.score = 95
+        team.feedback = "Ready for table view"
+        team.assigned_evaluator_id = leader.id
+        db_session.commit()
+
+        response = TeamRepository(db_session).list_teams_table()
+        row = next(item for item in response if item.team_name == "UNET Cyber-Warriors")
+
+        assert row.team_name == "UNET Cyber-Warriors"
+        assert row.leader_name == leader.name
+        assert row.evaluator is None
+        assert row.repository_link == "https://github.com/example/project"
+        assert row.status == "En revision"
+        assert row.score == 95
+        assert row.feedback == "Ready for table view"
+        assert row.updated_at is not None
+    finally:
+        team.status = original_status
+        team.cloud_repo_link = original_cloud_repo_link
+        team.score = original_score
+        team.feedback = original_feedback
+        team.assigned_evaluator_id = original_assigned_evaluator_id
+        db_session.commit()
+
+
+def test_upload_team_repository_link_input_rejects_non_github_url() -> None:
+    with pytest.raises(ValidationError):
+        UploadTeamRepositoryLinkInputDTO(
+            repository_link="https://gitlab.com/example/project"
+        )
+
+
+def test_update_team_repository_link_sets_status_pending(db_session) -> None:
+    team = db_session.query(Team).filter_by(name="UNET Cyber-Warriors").first()
+
+    assert team is not None, "The migration did not load the expected team"
+
+    original_status = team.status
+    original_cloud_repo_link = team.cloud_repo_link
+
+    try:
+        updated_team = TeamRepository(db_session).update_team_repository_link(
+            team.id,
+            "https://github.com/example/project",
+        )
+
+        assert updated_team.cloud_repo_link == "https://github.com/example/project"
+        assert updated_team.status == 1
+    finally:
+        team.status = original_status
+        team.cloud_repo_link = original_cloud_repo_link
+        db_session.commit()
+
 
 def test_get_user_team_not_found_real_user(repo, db_session) -> None:
     user = db_session.query(User).filter_by(email="maria.ballesteros@unet.edu.ve").first()

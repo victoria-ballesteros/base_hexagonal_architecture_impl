@@ -98,9 +98,9 @@ class DevelopmentDataSeeder(SeederInterface):
                 internal_code="super_admin",
             ),
             Role(
-                name="Competidor",
-                description="Privilegios de competidor",
-                internal_code="competitor",
+                name="Common User",
+                description="Privilegios de usuario comun",
+                internal_code="common_user",
             ),
         ]
         for r in roles:
@@ -139,7 +139,7 @@ class DevelopmentDataSeeder(SeederInterface):
                 email="testuser123@test.com",
                 password_hash="password_hash",
                 status=1,
-                role_id=roles["competitor"].id,
+                role_id=roles["common_user"].id,
                 category_id=category.id,
             ),
         ]

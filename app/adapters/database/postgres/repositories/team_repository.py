@@ -20,6 +20,7 @@ from app.domain.dtos.team_dto import (
     TeamMemberDTO,
     TeamRequestDTO,
     TeamResponseDTO,
+    TeamTableRowDTO,
     UserListDTO,
 )
 from app.domain.dtos.user_dto import UserDTO, UserResponseDTO
@@ -33,6 +34,13 @@ from app.ports.driven.database.postgres.team_repository_abc import (
     TeamRepositoryInterface,
 )
 from app.ports.driving.team_interface import TeamQueryInterface
+
+
+TEAM_STATUS_MESSAGES = {
+    1: "Pendiente",
+    2: "En revision",
+    3: "Aprobado",
+}
 
 
 class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
@@ -91,6 +99,26 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
         team = self.db.query(Team).filter(Team.id == team_id).first()
         return TeamResponseDTO.from_orm(team) if team else None
 
+    def update_team_repository_link(
+        self,
+        team_id: int,
+        repository_link: str,
+    ) -> TeamResponseDTO:
+        team = self.db.query(Team).filter(Team.id == team_id).first()
+        if team is None:
+            raise RecordNotFoundException("TEAM")
+
+        try:
+            team.cloud_repo_link = repository_link
+            team.status = 1
+            self.db.commit()
+            self.db.refresh(team)
+        except Exception:
+            self.db.rollback()
+            raise
+
+        return TeamResponseDTO.from_orm(team)
+
     def list_teams(self) -> list[TeamListItemDTO]:
         leader_user = aliased(User)
 
@@ -118,6 +146,41 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
                 team=TeamResponseDTO.from_orm(row[0]),
                 leader=UserResponseDTO.from_orm(row[1]) if row[1] else None,
                 members_count=int(row[2] or 0),
+            )
+            for row in rows
+        ]
+
+    def list_teams_table(self) -> list[TeamTableRowDTO]:
+        leader_user = aliased(User)
+
+        rows = self.db.execute(
+            select(
+                Team.name.label("team_name"),
+                leader_user.name.label("leader_name"),
+                Team.cloud_repo_link.label("repository_link"),
+                Team.status,
+                Team.score,
+                Team.feedback,
+                Team.updated_at,
+            )
+            .select_from(Team)
+            .outerjoin(
+                leader_user,
+                leader_user.id == Team.assigned_evaluator_id,
+            )
+            .order_by(Team.updated_at.desc(), Team.id.desc())
+        ).all()
+
+        return [
+            TeamTableRowDTO(
+                team_name=row.team_name,
+                leader_name=row.leader_name,
+                evaluator=None,
+                repository_link=row.repository_link,
+                status=TEAM_STATUS_MESSAGES.get(row.status, "Sin estado"),
+                score=row.score,
+                feedback=row.feedback,
+                updated_at=row.updated_at,
             )
             for row in rows
         ]
@@ -225,7 +288,7 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
             .join(Role, User.role_id == Role.id)\
             .filter(
                 User.status == UserStatus.ACTIVE,
-                Role.is_super_user == False 
+                Role.is_super_user.is_(False),
             ).all()
         
         return [

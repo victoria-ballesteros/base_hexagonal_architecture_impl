@@ -8,6 +8,7 @@ from app.domain.dtos.team_dto import (
     TeamListItemDTO,
     TeamRequestDTO,
     TeamResponseDTO,
+    TeamTableRowDTO,
     UserListDTO,
 )
 from app.domain.dtos.user_dto import UserDTO
@@ -52,7 +53,19 @@ class TeamRepositoryInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def update_team_repository_link(
+        self,
+        team_id: int,
+        repository_link: str,
+    ) -> TeamResponseDTO:
+        raise NotImplementedError
+
+    @abstractmethod
     def list_teams(self) -> list[TeamListItemDTO]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_teams_table(self) -> list[TeamTableRowDTO]:
         raise NotImplementedError
 
     @abstractmethod
