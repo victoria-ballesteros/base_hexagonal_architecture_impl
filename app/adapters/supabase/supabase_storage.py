@@ -57,7 +57,6 @@ class StorageBucketSupabase(StorageBucketInterfaceABC):
         except Exception as e:
             error_msg = str(e).lower()
             if "404" in error_msg or "not found" in error_msg:
-                return "uwu"
                 raise FileNotFoundError(bucket=bucket, path=path) from e
             if "bucket" in error_msg and "not found" in error_msg:
                 raise BucketNotFoundError(bucket=bucket) from e
