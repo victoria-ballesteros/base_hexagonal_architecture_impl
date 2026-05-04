@@ -30,7 +30,7 @@ from app.domain.dtos.team_dto import (
     GetUserTeamResponseDTO,
     GetTeamDetailResponseDTO,
     ListMyTeamInvitationsResponseDTO,
-    ListTeamsResponseDTO,
+    ListTeamsDisplayResponseDTO,
     SendTeamInvitationsInputDTO,
     SendTeamInvitationsResponseDTO,
 )
@@ -58,7 +58,7 @@ def create_team(
     return use_case.execute(_get_current_user_id(), data)
 
 
-@router.get("", response_model=ResultSchema[ListTeamsResponseDTO])
+@router.get("", response_model=ResultSchema[ListTeamsDisplayResponseDTO])
 @format_response
 def list_teams(
     _=Depends(RequireRoles(["admin"], [])),
@@ -158,3 +158,4 @@ def delete_team(
     use_case: HandlerInterface = Depends(get_delete_team_handler),
 ) -> Any:
     return use_case.execute(_get_current_user_id(), team_id)
+

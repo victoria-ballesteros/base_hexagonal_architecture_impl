@@ -31,6 +31,13 @@ from app.core.use_case.bucket.get_exercise import GetExerciseHandler
 
 from app.core.use_case.team.get_user_team import GetUserTeamHandler
 from app.core.use_case.team.get_active_users import GetActiveUsersHandler
+from app.core.use_case.team.assign_project_evaluator import (
+    AssignProjectEvaluatorHandler,
+)
+from app.core.use_case.team.get_evaluators import GetEvaluatorsHandler
+from app.core.use_case.team.update_team_score_feedback import (
+    UpdateTeamScoreFeedbackHandler,
+)
 
 from app.domain.config import settings
 from app.domain.exceptions.base_exceptions import (
@@ -191,6 +198,12 @@ def get_active_users_handler(
     return GetActiveUsersHandler(team_repo)
 
 
+def get_evaluators_handler(
+    team_repo: TeamRepository = Depends(get_team_repository),
+) -> GetEvaluatorsHandler:
+    return GetEvaluatorsHandler(team_repo)
+
+
 # Authorization
 
 
@@ -312,5 +325,23 @@ def get_accept_team_invitation_handler(
     return AcceptTeamInvitationHandler(get_team_repository(db))
 
 
+def get_assign_project_evaluator_handler(
+    db: Session = Depends(get_db),
+) -> AssignProjectEvaluatorHandler:
+    return AssignProjectEvaluatorHandler(get_team_repository(db))
+
+
 def get_delete_team_handler(db: Session = Depends(get_db)) -> DeleteTeamHandler:
     return DeleteTeamHandler(get_team_repository(db))
+
+
+def get_update_team_score_feedback_handler(
+    db: Session = Depends(get_db),
+) -> UpdateTeamScoreFeedbackHandler:
+    return UpdateTeamScoreFeedbackHandler(get_team_repository(db))
+
+
+def get_update_team_votes_handler(db: Session = Depends(get_db)) -> Any:
+    from app.core.use_case.team.update_team_votes import UpdateTeamVotesHandler
+
+    return UpdateTeamVotesHandler(get_team_repository(db))

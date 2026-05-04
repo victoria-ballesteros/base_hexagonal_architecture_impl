@@ -22,6 +22,7 @@ class TeamResponseDTO(BaseModel):
     evaluation_id: int | None = Field(default=None)
     assigned_evaluator_id: int | None = Field(default=None)
     project_evaluator_id: int | None = Field(default=None)
+    votes_qty: int | None = Field(default=None)
 
     @classmethod
     def from_orm(cls, orm_obj: object) -> "TeamResponseDTO":
@@ -72,6 +73,25 @@ class SendTeamInvitationsInputDTO(BaseModel):
     usernames: list[str] = Field(..., min_length=1, description="Usernames to invite")
 
 
+class AssignProjectEvaluatorInputDTO(BaseModel):
+    user_id: int = Field(..., gt=0, description="User identifier to set as project evaluator")
+
+
+class AssignProjectEvaluatorResponseDTO(BaseModel):
+    message: str = Field(default="Project evaluator assigned successfully")
+    team: TeamResponseDTO = Field(...)
+
+
+class UpdateTeamScoreFeedbackInputDTO(BaseModel):
+    score: int | None = Field(default=None, description="Score to assign to the team")
+    feedback: str | None = Field(default=None, description="Feedback text for the team")
+
+
+class UpdateTeamScoreFeedbackResponseDTO(BaseModel):
+    message: str = Field(default="Team updated successfully")
+    team: TeamResponseDTO = Field(...)
+
+
 class SendTeamInvitationsResponseDTO(BaseModel):
     message: str = Field(default="Invitations processed successfully")
     team_id: int = Field(...)
@@ -112,6 +132,34 @@ class TeamListItemDTO(BaseModel):
 class ListTeamsResponseDTO(BaseModel):
     message: str = Field(default="Teams retrieved successfully")
     teams: list[TeamListItemDTO] = Field(default_factory=list)
+
+
+class TeamDisplayDTO(BaseModel):
+    id: int = Field(...)
+    name: str = Field(...)
+    logo: str | None = Field(default=None)
+    score: int | None = Field(default=None)
+    standing_position: int | None = Field(default=None)
+    cloud_repo_link: str | None = Field(default=None)
+    status: int = Field(default=0)
+    feedback: str | None = Field(default=None)
+    edition_id: int = Field(...)
+    category_name: str = Field(...)
+    evaluation_id: int | None = Field(default=None)
+    assigned_evaluator_username: str | None = Field(default=None)
+    project_evaluator_username: str | None = Field(default=None)
+    votes_qty: int | None = Field(default=None)
+
+
+class TeamListItemDisplayDTO(BaseModel):
+    team: TeamDisplayDTO = Field(...)
+    leader: UserResponseDTO | None = Field(default=None)
+    members_count: int = Field(default=0)
+
+
+class ListTeamsDisplayResponseDTO(BaseModel):
+    message: str = Field(default="Teams retrieved successfully")
+    teams: list[TeamListItemDisplayDTO] = Field(default_factory=list)
 
 
 class TeamDetailDTO(BaseModel):

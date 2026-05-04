@@ -122,6 +122,41 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
             for row in rows
         ]
 
+    def list_teams_enriched(self) -> list:
+        leader_user = aliased(User)
+        project_user = aliased(User)
+
+        rows = self.db.execute(
+            select(
+                Team,
+                leader_user,
+                func.count(user_team_association.c.user_id).label("members_count"),
+                Category.name.label("category_name"),
+                project_user.username.label("project_evaluator_username"),
+            )
+            .select_from(Team)
+            .outerjoin(
+                leader_user,
+                leader_user.id == Team.assigned_evaluator_id,
+            )
+            .outerjoin(
+                project_user,
+                project_user.id == Team.project_evaluator_id,
+            )
+            .join(Category, Category.id == Team.category_id)
+            .outerjoin(
+                user_team_association,
+                user_team_association.c.team_id == Team.id,
+            )
+            .group_by(Team.id, leader_user.id, Category.id, project_user.username)
+            .order_by(Team.id.desc())
+        ).all()
+
+        # Return rows as tuples: (team_orm, leader_orm, members_count, category_name, project_evaluator_username)
+        return [
+            (row[0], row[1], int(row[2] or 0), row[3], row[4]) for row in rows
+        ]
+
     def get_user_team(self, user_id: str) -> GetUserTeamResponseDTO:
         current_edition = self.db.query(Edition)\
             .order_by(desc(Edition.start_date))\
@@ -234,6 +269,20 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
                 email=user.email,
                 name=user.name
             )
+            for user in users
+        ]
+
+    def get_users_by_role(self, role_internal_code: str) -> list[UserListDTO]:
+        users = (
+            self.db.query(User)
+            .join(Role, User.role_id == Role.id)
+            .filter(Role.internal_code == role_internal_code, User.status == UserStatus.ACTIVE)
+            .order_by(User.id.asc())
+            .all()
+        )
+
+        return [
+            UserListDTO(username=user.username, email=user.email, name=user.name)
             for user in users
         ]
 
@@ -375,6 +424,99 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
             )
             for row in rows
         ]
+
+    def is_user_role(self, user_id: int, role_internal_code: str) -> bool:
+        row = (
+            self.db.query(Role)
+            .join(User, Role.id == User.role_id)
+            .filter(User.id == user_id, Role.internal_code == role_internal_code)
+            .first()
+        )
+        return row is not None
+
+    def update_project_evaluator(self, team_id: int, user_id: int) -> TeamResponseDTO:
+        team = self.db.query(Team).filter(Team.id == team_id).first()
+        if team is None:
+            raise RecordNotFoundException("TEAM")
+
+        try:
+            team.project_evaluator_id = user_id
+            self.db.add(team)
+            self.db.commit()
+            self.db.refresh(team)
+        except Exception:
+            self.db.rollback()
+            raise
+
+        return TeamResponseDTO.from_orm(team)
+
+    def is_team_category(self, team_id: int, category_internal_code: str) -> bool:
+        row = (
+            self.db.query(Category)
+            .join(Team, Category.id == Team.category_id)
+            .filter(Team.id == team_id, Category.internal_code == category_internal_code)
+            .first()
+        )
+        return row is not None
+
+    def update_team_score_feedback(
+        self, team_id: int, score: int | None, feedback: str | None
+    ) -> TeamResponseDTO:
+        team = self.db.query(Team).filter(Team.id == team_id).first()
+        if team is None:
+            raise RecordNotFoundException("TEAM")
+
+        try:
+            if score is not None:
+                team.score = score
+            if feedback is not None:
+                team.feedback = feedback
+            # set status to 2 as requested
+            team.status = 2
+            self.db.add(team)
+            self.db.commit()
+            self.db.refresh(team)
+        except Exception:
+            self.db.rollback()
+            raise
+
+        return TeamResponseDTO.from_orm(team)
+
+    def update_team_votes_qty(self, team_id: int, votes_qty: int) -> TeamResponseDTO:
+        team = self.db.query(Team).filter(Team.id == team_id).first()
+        if team is None:
+            raise RecordNotFoundException("TEAM")
+
+        try:
+            team.votes_qty = votes_qty
+            self.db.add(team)
+            self.db.commit()
+            self.db.refresh(team)
+        except Exception:
+            self.db.rollback()
+            raise
+
+        return TeamResponseDTO.from_orm(team)
+
+    def update_team_votes_and_feedback(
+        self, team_id: int, votes_qty: int, feedback: str | None
+    ) -> TeamResponseDTO:
+        team = self.db.query(Team).filter(Team.id == team_id).first()
+        if team is None:
+            raise RecordNotFoundException("TEAM")
+
+        try:
+            team.votes_qty = votes_qty
+            if feedback is not None:
+                team.feedback = feedback
+            self.db.add(team)
+            self.db.commit()
+            self.db.refresh(team)
+        except Exception:
+            self.db.rollback()
+            raise
+
+        return TeamResponseDTO.from_orm(team)
 
     def get_team_request_by_id(self, team_request_id: int) -> TeamRequestDTO | None:
         row = self.db.execute(
