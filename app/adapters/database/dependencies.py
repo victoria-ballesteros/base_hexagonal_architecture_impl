@@ -189,7 +189,7 @@ def get_team_repository(db: Session = Depends(get_db)) -> TeamRepository:
 def get_user_team_handler(
     team_repo: TeamRepository = Depends(get_team_repository),
 ) -> GetUserTeamHandler:
-    return GetUserTeamHandler(team_repo)
+    return GetUserTeamHandler(team_repo, get_supabase_client())
 
 
 def get_active_users_handler(
@@ -294,7 +294,7 @@ def get_create_team_handler(db: Session = Depends(get_db)) -> CreateTeamHandler:
 
 
 def get_list_teams_handler(db: Session = Depends(get_db)) -> ListTeamsHandler:
-    return ListTeamsHandler(get_team_repository(db))
+    return ListTeamsHandler(get_team_repository(db), get_supabase_client())
 
 
 def get_team_detail_handler(db: Session = Depends(get_db)) -> GetTeamDetailHandler:

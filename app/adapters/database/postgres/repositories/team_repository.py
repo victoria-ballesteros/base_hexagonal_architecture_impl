@@ -7,6 +7,7 @@ from app.adapters.database.postgres.models.category_model import Category
 from app.adapters.database.postgres.models.edition_model import Edition
 from app.adapters.database.postgres.models.role_model import Role
 from app.adapters.database.postgres.models.team_model import Team
+from app.adapters.database.postgres.models.evaluation_model import Evaluation
 from app.adapters.database.postgres.models.user_model import (
     User,
     team_request_association,
@@ -318,6 +319,14 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
             members=members,
             members_count=len(members),
         )
+
+    def get_evaluation_file_name(self, evaluation_id: int) -> str | None:
+        if evaluation_id is None:
+            return None
+        row = (
+            self.db.query(Evaluation).filter(Evaluation.id == evaluation_id).first()
+        )
+        return getattr(row, "file_name", None) if row else None
 
     def create_team(
         self,

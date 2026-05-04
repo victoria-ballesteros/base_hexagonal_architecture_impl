@@ -40,6 +40,7 @@ class TeamResponseDTO(BaseModel):
             evaluation_id=getattr(orm_obj, "evaluation_id", None),
             assigned_evaluator_id=getattr(orm_obj, "assigned_evaluator_id", None),
             project_evaluator_id=getattr(orm_obj, "project_evaluator_id", None),
+            votes_qty=getattr(orm_obj, "votes_qty", None),
         )
 
 
@@ -146,6 +147,7 @@ class TeamDisplayDTO(BaseModel):
     edition_id: int = Field(...)
     category_name: str = Field(...)
     evaluation_id: int | None = Field(default=None)
+    evaluation_file_url: str | None = Field(default=None)
     assigned_evaluator_username: str | None = Field(default=None)
     project_evaluator_username: str | None = Field(default=None)
     votes_qty: int | None = Field(default=None)

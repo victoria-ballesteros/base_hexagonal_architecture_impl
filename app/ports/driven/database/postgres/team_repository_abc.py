@@ -147,3 +147,7 @@ class TeamRepositoryInterface(ABC):
         self, team_id: int, votes_qty: int, feedback: str | None
     ) -> TeamResponseDTO:
         raise NotImplementedError
+
+    @abstractmethod
+    def get_evaluation_file_name(self, evaluation_id: int) -> str | None:
+        raise NotImplementedError
