@@ -38,6 +38,8 @@ class UserRepository(UserRepositoryInterface):
             name=data.name,
             email=email,
             password_hash=data.password_hash,
+            programming_language=data.programming_language,
+            github_profile=data.github_profile,
             role_id=data.role_id,
             portrait=data.portrait,
             category_id=None,
@@ -65,6 +67,8 @@ class UserRepository(UserRepositoryInterface):
 
             existing_user.name = data.name
             existing_user.password_hash = data.password_hash
+            existing_user.programming_language = data.programming_language
+            existing_user.github_profile = data.github_profile
             existing_user.portrait = data.portrait
             existing_user.status = (
                 data.status if data.status is not None else UserStatus.PENDING

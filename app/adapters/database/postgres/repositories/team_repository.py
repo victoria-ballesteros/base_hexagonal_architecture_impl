@@ -331,7 +331,9 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
             UserListDTO(
                 username=user.username,
                 email=user.email,
-                name=user.name
+                name=user.name,
+                programming_language=user.programming_language,
+                github_profile=user.github_profile,
             )
             for user in users
         ]
@@ -346,7 +348,13 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
         )
 
         return [
-            UserListDTO(username=user.username, email=user.email, name=user.name)
+            UserListDTO(
+                username=user.username,
+                email=user.email,
+                name=user.name,
+                programming_language=user.programming_language,
+                github_profile=user.github_profile,
+            )
             for user in users
         ]
 

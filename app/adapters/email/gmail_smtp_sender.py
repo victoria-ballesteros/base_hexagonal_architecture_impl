@@ -17,12 +17,15 @@ class GmailSmtpSender(EmailSenderInterface):
         if not self.user or not self.password or not self.from_email:
             raise RuntimeError("SMTP_USER / SMTP_PASSWORD / SMTP_FROM_EMAIL are required")
 
-    def send_verification_email(self, to_email: str, user_name: str, verify_link: str) -> None:
+    def send_verification_email(
+        self, to_email: str, user_name: str, verify_link: str, temporary_password: str
+    ) -> None:
         subject = "Verify your email"
         body = (
             f"Hi {user_name},\n\n"
+            f"Your temporary password is: {temporary_password}\n\n"
             f"Please verify your email by clicking this link:\n{verify_link}\n\n"
-            f"If you didn’t request this, ignore this email."
+            f"If you didn't request this, ignore this email."
         )
 
         msg = MIMEMultipart()
