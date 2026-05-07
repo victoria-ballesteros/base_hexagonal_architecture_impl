@@ -1,52 +1,122 @@
-# HWC SERVER
-Este proyecto implementa una arquitectura hexagonal (también conocida como puertos y adaptadores), un patrón de diseño que permite mantener el núcleo del negocio completamente independiente de los detalles técnicos y frameworks externos. La arquitectura está organizada en capas concéntricas donde el dominio (lógica de negocio) permanece en el centro, protegido de cambios en tecnologías externas.
+# HWC Server
 
-## ESTRUCTURA DEL PROYECTO
+Backend API desarrollada en **Python** con **FastAPI**, estructurada bajo **Arquitectura Hexagonal (Ports & Adapters)**.  
+El objetivo principal del proyecto es **aislar completamente el dominio** de los frameworks y detalles de infraestructura, permitiendo que el núcleo de negocio evolucione de forma independiente y mantenible.
 
-app/ <br>
-├── adapters/              # Capa de infraestructura <br>
-│   ├── database/          # Adaptadores de persistencia <br>
-│   │   └── postgres/      # PostgreSQL específico <br>
-│   │       ├── models/    # Modelos SQLAlchemy <br>
-│   │       ├── repositories/  # Implementaciones de repositorios <br>
-│   │       └── connection.py  # Conexión a DB <br>
-│   └── routing/           # Adaptadores web (FastAPI) <br>
-│       ├── routers/       # Endpoints <br>
-│       └── utils/         # Utilidades de routing <br>
-│ <br>
-├── domain/                # Capa de dominio (core business) <br>
-│   ├── core/             # Núcleo del dominio <br>
-│   │   ├── exceptions/   # Excepciones de negocio <br>
-│   │   ├── services/     # Servicios de dominio <br>
-│   │   ├── config.py     # Configuración <br>
-│   │   └── enums.py      # Enumeraciones <br>
-│   ├── dtos/             # Data Transfer Objects <br>
-│   └── ports/            # Puertos (interfaces) <br>
-│       ├── driven/       # Puertos hacia afuera (DB, APIs externas) <br>
-│       └── driving/      # Puertos hacia adentro (casos de uso) <br>
-│ <br>
-└── main.py               # Punto de entrada <br>
+Este repositorio representa una **base sólida para servicios backend modernos**, preparada para escalar, testear y adaptarse a cambios tecnológicos (DB, frameworks web, integraciones externas).
 
+---
+
+## 📌 Descripción del proyecto
+
+**HWC Server** implementa una API HTTP con FastAPI y persistencia en **PostgreSQL** usando **SQLAlchemy**.  
+La arquitectura está organizada en **capas concéntricas**, donde:
+
+- El **dominio** contiene la lógica de negocio pura.
+- Los **puertos** definen contratos (interfaces).
+- Los **adaptadores** implementan dichos contratos para tecnologías concretas (FastAPI, PostgreSQL, etc.).
+
+Incluye además:
+- Configuración por variables de entorno.
+- Inicialización automática de base de datos.
+- Seeders para entorno de desarrollo.
+- Contenedores Docker listos para desarrollo local.
+
+---
+
+## 🚀 Funcionalidades principales
+
+- ✅ API HTTP con FastAPI
+- ✅ Documentación automática con Swagger (`/docs`)
+- ✅ Healthcheck (`GET /health`)
+- ✅ Ejemplo de endpoints (`/test`)
+- ✅ Respuestas HTTP con formato unificado
+- ✅ Persistencia en PostgreSQL con SQLAlchemy
+- ✅ Inicialización automática de tablas
+- ✅ Seeder automático en entorno **development**
+- ✅ Dockerfile + Docker Compose
+
+---
+
+## 🛠️ Tecnologías utilizadas
+
+- **Python 3.11**
+- **FastAPI**
+- **Uvicorn**
+- **SQLAlchemy**
+- **PostgreSQL**
+- **Pydantic v2**
+- **pydantic-settings**
+- **Docker / Docker Compose**
+
+Dependencias definidas en `requirements.txt`.
+
+---
+
+## ⚙️ Requisitos previos
+
+- Docker
+- Docker Compose
+
+---
+
+## 📂 Estructura del proyecto
+
+```text
+app/
+├── adapters/                 # Infraestructura (adaptadores)
+│   ├── database/             # Persistencia
+│   │   └── postgres/
+│   │       ├── connection.py # Engine + Session
+│   │       ├── models/       # Modelos SQLAlchemy
+│   │       ├── repositories/ # Implementaciones concretas
+│   │       └── seeders/      # Datos iniciales (dev)
+│   └── routing/              # Adaptador web (FastAPI)
+│       ├── main.py           # Punto de entrada ASGI
+│       ├── config.py         # Configuración FastAPI (CORS, routers)
+│       └── routers/          # Endpoints
+│
+├── domain/                   # Núcleo del negocio
+│   ├── core/
+│   │   ├── config.py
+│   │   ├── enums.py
+│   │   └── exceptions/
+│   ├── dtos/                 # Data Transfer Objects
+│   └── services/             # Servicios de dominio
+│
+└── ports/                    # Puertos (interfaces)
+    ├── driven/               # Hacia infraestructura (DB, APIs externas)
+    └── driving/              # Hacia el dominio (casos de uso)
+```
+
+---
+
+
+## 📈Flujo
 <img width="796" height="597" alt="WHC SERVER ARCHITECTURE drawio" src="https://github.com/user-attachments/assets/1b2f5ea8-bb01-479f-8485-0a30fc330cca" />
 
-## Ejecución
+---
+## 📦Instalacion/Ejecucion
 
-### Construir la imagen Docker:
+### Docker Compose 
+
 ```bash
+cp .env.development.example .env
+chmod +x entrypoint.sh
 docker compose up --build
 ```
-### Acceder a los docs expuestos en:
-```bash
-http://localhost:8000/docs#/
+
+
+### API disponible en
+
+```bash 
+http://localhost:8000
 ```
 
-## Convenciones
-1. Interfaces: Sufijo ABC (Abstract Base Class)
-2. Implementaciones: Sin sufijo especial
-3. DTOs: Sufijo DTO
-4. Modelos: Nombres en singular (ej: Test)
-5. Repositorios: Sufijo Repository
+### Swagger
+```bash
+http://localhost:8000/docs
+```
 
-## TODOs
-1. Mejora del README.
-2. Carga y esquematización de modelos.
+---
+

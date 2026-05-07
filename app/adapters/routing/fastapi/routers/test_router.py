@@ -3,6 +3,7 @@ from app.ports.driving.handler_interface import HandlerInterface
 from fastapi import APIRouter, Depends  # type: ignore
 
 from app.adapters.database.dependencies import (
+    RequireRoles,
     delete_test_by_id_handler,
     get_test_by_id_handler,
 )
@@ -10,12 +11,14 @@ from app.adapters.routing.utils.decorators import format_response
 from app.adapters.routing.utils.response import ResultSchema
 from app.domain.dtos.test_dto import TestDTO
 
-test_router=APIRouter(prefix="/tests", tags=["test"])
+test_router=APIRouter(prefix="/tests", tags=["Tests"])
 
 @test_router.get("/test", response_model=ResultSchema[TestDTO])
 @format_response
 def read_test(
-    id: int, use_case: HandlerInterface=Depends(get_test_by_id_handler)
+    id: int,
+    use_case: HandlerInterface = Depends(get_test_by_id_handler),
+    _=Depends(RequireRoles(["common_user"], ["check_if_user_is_active"])),
 ) -> Any:
     return use_case.execute(id)
 

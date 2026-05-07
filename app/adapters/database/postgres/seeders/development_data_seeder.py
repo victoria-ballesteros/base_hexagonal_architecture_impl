@@ -24,11 +24,11 @@ class DevelopmentDataSeeder(SeederInterface):
             if clear_existing:
                 self._clear_tables()
 
-            self.logger.info("Development data seeding process started.")
+                self.logger.info("Development data seeding process started.")
 
-            self._seed_tables()
+                self._seed_tables()
 
-            self.logger.info("Development data seeding process finished.")
+                self.logger.info("Development data seeding process finished.")
             
         except Exception as e:
             self.db.rollback()
@@ -47,166 +47,153 @@ class DevelopmentDataSeeder(SeederInterface):
         self._clear_general_table("Team", Team)
 
     def _seed_tables(self) -> None:
-        self._seed_edition_table()
-        self._seed_sponsor_table()
-        self._seed_role_table()
-        self._seed_category_table()
-        self._seed_user_table()
-        self._seed_evaluation_table()
-        self._seed_team_model()
+        edition = self._seed_edition_table()
+        self._seed_sponsor_table(edition.id)
 
-        self._seed_associations()
+        roles = self._seed_role_table()
+        category = self._seed_category_table()
 
+        users = self._seed_user_table(roles, category)
+        self._seed_evaluation_table(category.id)
 
-    def _seed_edition_table(self) -> None:
-        data=[
-            Edition(
-                id=1,
-                name="HWC: SECOND EDITION",
-                start_date=datetime.now(timezone.utc),
-                end_date=datetime.now(timezone.utc) + timedelta(days=2),
-            )
-        ]
-
-        self._seed_general_data("Edition", data)
-
-    def _seed_sponsor_table(self) -> None:
-        social_data=SocialMediaDefinition(
-            type=SocialMedia.TEST_SOCIAL_MEDIA.value,
-            identity="@usuario"
+        team = self._seed_team_model(
+            edition.id, category.id, users[0].id
         )
-        data=[
-            Sponsor(
-                id=1,
-                company_name="Nombre",
-                company_type=CompanyType.TEST_COMPANY.value,
-                description="Descripción",
-                slogan="Slogan",
-                logo="nombre_del_logo.png",
-                social_media=social_data,
-                edition_id=1
-            )
-        ]
 
-        self._seed_general_data("Sponsor", data)
-    
-    def _seed_role_table(self) -> None:
-        data = [
+        self._seed_associations(users, team)
+
+    def _seed_edition_table(self) -> Edition:
+        edition = Edition(
+            name="HWC: SECOND EDITION",
+            start_date=datetime.now(timezone.utc),
+            end_date=datetime.now(timezone.utc) + timedelta(days=2),
+        )
+        self.db.add(edition)
+        self.db.commit()
+        self.db.refresh(edition)
+        return edition
+
+    def _seed_sponsor_table(self, edition_id: int) -> None:
+        social_data = SocialMediaDefinition(
+            type=SocialMedia.TEST_SOCIAL_MEDIA.value, identity="@usuario"
+        )
+        sponsor = Sponsor(
+            company_name="Nombre",
+            company_type=CompanyType.TEST_COMPANY.value,
+            description="Descripción",
+            slogan="Slogan",
+            logo="nombre_del_logo.png",
+            social_media=social_data,
+            edition_id=edition_id,
+        )
+        self.db.add(sponsor)
+        self.db.commit()
+
+    def _seed_role_table(self) -> dict[str, Role]:
+        roles = [
             Role(
-                id=1,
                 name="Super Admin",
-                description="Rol con todos los privilegios",
+                description="Privilegios totales",
                 is_super_user=True,
                 internal_code="super_admin",
             ),
             Role(
-                id=2,
                 name="Competidor",
-                description="Rol con privilegios de competidor",
+                description="Privilegios de competidor",
                 internal_code="competitor",
             ),
         ]
+        for r in roles:
+            self.db.add(r)
+        self.db.commit()
+        return {r.internal_code: r for r in roles}
 
-        self._seed_general_data("Role", data)
+    def _seed_category_table(self) -> Category:
+        category = Category(
+            name="Junior",
+            open_date=datetime.now(timezone.utc),
+            close_date=datetime.now(timezone.utc) + timedelta(days=2),
+            internal_code="junior_test",
+        )
+        self.db.add(category)
+        self.db.commit()
+        self.db.refresh(category)
+        return category
 
-    def _seed_category_table(self) -> None:
-        data=[
-            Category(
-                id=1,
-                name="Junior",
-                open_date=datetime.now(timezone.utc),
-                close_date=datetime.now(timezone.utc) + timedelta(days=2),
-                internal_code="junior_test",
-            )
-        ]
-
-        self._seed_general_data("Category", data)
-
-    def _seed_user_table(self) -> None:
-        data = [
+    def _seed_user_table(
+        self, roles: dict[str, Role], category: Category
+    ) -> list[User]:
+        users = [
             User(
-                id=1,
                 username="super_admin",
                 name="Super Admin",
                 email="superadmin123@test.com",
                 password_hash="password_hash",
-                portrait=None,
                 status=1,
-                role_id=1,
+                role_id=roles["super_admin"].id,
                 category_id=None,
             ),
             User(
-                id=2,
                 username="test_user",
                 name="Test User",
                 email="testuser123@test.com",
                 password_hash="password_hash",
-                portrait=None,
                 status=1,
-                role_id=2,
-                category_id=1,
+                role_id=roles["competitor"].id,
+                category_id=category.id,
             ),
         ]
+        for u in users:
+            self.db.add(u)
+        self.db.commit()
+        for u in users:
+            self.db.refresh(u)
+        return users
 
-        self._seed_general_data("User", data)
+    def _seed_evaluation_table(self, category_id: int) -> Evaluation:
+        evaluation = Evaluation(
+            file_name="evaluation_filename.pdf", category_id=category_id
+        )
+        self.db.add(evaluation)
+        self.db.commit()
+        self.db.refresh(evaluation)
+        return evaluation
 
-    def _seed_evaluation_table(self) -> None:
-        data = [
-            Evaluation(
-                id=1,
-                file_name="evaluation_filename.pdf",
-                category_id=1
-            )
-        ]
+    def _seed_team_model(
+        self, edition_id: int, category_id: int, evaluator_id: int
+    ) -> Team:
+        team = Team(
+            name="Team Test",
+            logo="nombre_del_logo.png",
+            edition_id=edition_id,
+            category_id=category_id,
+            assigned_evaluator_id=evaluator_id,
+        )
+        self.db.add(team)
+        self.db.commit()
+        self.db.refresh(team)
+        return team
 
-        self._seed_general_data("Evaluation", data)
-
-    def _seed_team_model(self) -> None:
-        data=[
-            Team(
-                id=1,
-                name="Team Test",
-                logo="nombre_del_logo.png",
-                score=None,
-                standing_position=None,
-                cloud_repo_link=None,
-                edition_id=1,
-                category_id=1,
-                evaluation_id=None,
-                assigned_evaluator_id=1
-            )
-        ]
-
-        self._seed_general_data("User", data)
-
-
-    # UTILS
-
-    def _seed_associations(self) -> None:
+    def _seed_associations(self, users: list[User], team: Team) -> None:
         self.db.execute(
             user_team_association.insert().values( # type: ignore
-                [
-                    {"user_id": 2, "team_id": 1},
-                ]
+                [{"user_id": users[1].id, "team_id": team.id}]
             )
         )
 
         self.db.execute(
-            team_request_association.insert().values(  # type: ignore
+            team_request_association.insert().values( # type: ignore
                 [
                     {
-                        "id": 1,
-                        "team_id": 1,
-                        "sender_user_id": 1,
-                        "receiver_user_id": 2,
+                        "team_id": team.id,
+                        "sender_user_id": users[0].id,
+                        "receiver_user_id": users[1].id,
                         "status": TeamRequestStatus.PENDING.value,
                     },
                 ]
             )
         )
-
         self.db.commit()
-        self.logger.info("Associations seeded.")
 
     def _clear_associations(self) -> None:
         self.db.execute(user_team_association.delete()) # type: ignore

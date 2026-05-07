@@ -16,12 +16,12 @@ class TestSeeder(SeederInterface):
             if clear_existing:
                 self._clear_table()
 
-            created_count=self._seed_tests()
+                created_count=self._seed_tests()
 
-            self.db.commit()
-            self.logger.info(
-                f"Test model seed process completed. {created_count} records created"
-            )
+                self.db.commit()
+                self.logger.info(
+                    f"Test model seed process completed. {created_count} records created"
+                )
 
         except Exception as e:
             self.db.rollback()

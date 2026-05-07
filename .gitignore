@@ -292,3 +292,8 @@ htmlcov/
 
 # Profiling data
 .prof
+
+#documentation for myself
+docs/
+
+entrypoint.sh
