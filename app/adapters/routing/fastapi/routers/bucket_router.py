@@ -96,12 +96,12 @@ async def get_sponsor_logo(
     return await handler.execute(GetSponsorLogoDTO(sponsor_id=sponsor_id))
 
 
+# PARA REVERTIR: agregar `_=Depends(RequireRoles(["common_user", "admin"], [])),` como parámetro después de `handler:...`
 @bucket_router.get("/exercises/{exercise_id}")
 @format_response
 async def get_exercise(
     exercise_id: str = Path(..., description="Exercise ID"),
     handler: GetExerciseHandler = Depends(get_get_exercise_handler),
-    _=Depends(RequireRoles(["common_user", "admin"], [])),
 ) -> Any:
     return await handler.execute(GetExerciseDTO(exercise_id=exercise_id))
 
