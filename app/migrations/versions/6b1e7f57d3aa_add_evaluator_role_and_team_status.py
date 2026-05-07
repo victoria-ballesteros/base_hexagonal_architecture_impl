@@ -86,6 +86,48 @@ def upgrade() -> None:
                 },
             )
 
+        # Evaluator seeding
+        role_evaluator_id = conn.execute(
+            sa.text("SELECT id FROM role WHERE internal_code = 'evaluator'")
+        ).fetchone()[0]
+
+        cat_id_row = conn.execute(
+            sa.text("SELECT id FROM category WHERE internal_code = 'cat_general'")
+        ).fetchone()
+
+        if not cat_id_row:
+            cat_id_row = conn.execute(sa.text("SELECT id FROM category LIMIT 1")).fetchone()
+
+        cat_id = cat_id_row[0] if cat_id_row else None
+
+        default_hash = "$argon2id$v=19$m=65536,t=3,p=4$+t9b693b2xsjpNR6j7GWMg$3IB15WbxlyCIpV7kT1IXTP/4DIqj2De0m6MQa3zze7E"
+        evaluator_email = "evaluador@unet.edu.ve"
+
+        evaluator_user_exists = conn.execute(
+            sa.text("SELECT 1 FROM \"user\" WHERE email =:email"),
+            {"email": evaluator_email}
+        ).fetchone()
+
+        if not evaluator_user_exists:
+            conn.execute(
+                sa.text(
+                    """
+                    INSERT INTO "user" (username, name, email, password_hash, status, role_id, category_id, is_verified)
+                    VALUES (:username, :name, :email, :password_hash, :status, :role_id, :category_id, :is_verified)
+                    """
+                ),
+                {
+                    "username": "evaluador",
+                    "name": "Profesor Evaluador",
+                    "email": evaluator_email,
+                    "password_hash": default_hash,
+                    "status": "ACTIVE",
+                    "role_id": role_evaluator_id,
+                    "category_id": cat_id,
+                    "is_verified": True
+                }
+            )
+
 
 def downgrade() -> None:
     conn = op.get_bind()
