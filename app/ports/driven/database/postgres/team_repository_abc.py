@@ -65,6 +65,11 @@ class TeamRepositoryInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def list_teams_enriched(self) -> list:
+        """Return list of enriched team rows: (Team ORM, leader ORM or None, members_count, category_name, assigned_evaluator_username, project_evaluator_username)"""
+        raise NotImplementedError
+
+    @abstractmethod
     def list_teams_table(self) -> list[TeamTableRowDTO]:
         raise NotImplementedError
 
@@ -126,4 +131,36 @@ class TeamRepositoryInterface(ABC):
 
     @abstractmethod
     def delete_team_with_associations(self, team_id: int) -> tuple[int, int]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def is_user_role(self, user_id: int, role_internal_code: str) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def update_project_evaluator(self, team_id: int, user_id: int) -> TeamResponseDTO:
+        raise NotImplementedError
+
+    @abstractmethod
+    def is_team_category(self, team_id: int, category_internal_code: str) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def update_team_score_feedback(
+        self, team_id: int, score: int | None, feedback: str | None
+    ) -> TeamResponseDTO:
+        raise NotImplementedError
+
+    @abstractmethod
+    def update_team_votes_qty(self, team_id: int, votes_qty: int) -> TeamResponseDTO:
+        raise NotImplementedError
+
+    @abstractmethod
+    def update_team_votes_and_feedback(
+        self, team_id: int, votes_qty: int, feedback: str | None
+    ) -> TeamResponseDTO:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_evaluation_file_name(self, evaluation_id: int) -> str | None:
         raise NotImplementedError

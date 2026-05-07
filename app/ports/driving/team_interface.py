@@ -12,3 +12,7 @@ class TeamQueryInterface(ABC):
     @abstractmethod
     def get_active_users(self) -> List[UserListDTO]:
         raise NotImplementedError("Get active users method not implemented")
+
+    @abstractmethod
+    def get_users_by_role(self, role_internal_code: str) -> List[UserListDTO]:
+        raise NotImplementedError("Get users by role method not implemented")

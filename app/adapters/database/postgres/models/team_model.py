@@ -10,6 +10,7 @@ class Team(Base):
     name = Column(String, nullable=False)
     logo = Column(String)
     score = Column(Integer)
+    votes_qty = Column(Integer, nullable=True)
     standing_position = Column(Integer)
     cloud_repo_link = Column(String)
     status = Column(Integer, nullable=False, server_default="0")

@@ -29,11 +29,10 @@ from app.domain.dtos.team_dto import (
     CreateTeamResponseDTO,
     DeleteTeamInvitationResponseDTO,
     DeleteTeamResponseDTO,
-    GetUserTeamResponseDTO,
     GetTeamDetailResponseDTO,
     ListMyTeamInvitationsResponseDTO,
     ListTeamsTableResponseDTO,
-    ListTeamsResponseDTO,
+    ListTeamsDisplayResponseDTO,
     SendTeamInvitationsInputDTO,
     SendTeamInvitationsResponseDTO,
     UploadTeamRepositoryLinkInputDTO,
@@ -63,13 +62,14 @@ def create_team(
     return use_case.execute(_get_current_user_id(), data)
 
 
-@router.get("", response_model=ResultSchema[ListTeamsResponseDTO])
+@router.get("", response_model=ResultSchema[ListTeamsDisplayResponseDTO])
 @format_response
-def list_teams(
+async def list_teams(
     _=Depends(RequireRoles(["admin"], [])),
     use_case: HandlerInterface = Depends(get_list_teams_handler),
 ) -> Any:
-    return use_case.execute()
+    return await use_case.execute()
+
 
 
 @router.get("/table", response_model=ResultSchema[ListTeamsTableResponseDTO])
@@ -81,17 +81,17 @@ def list_teams_table(
     return use_case.execute()
 
 
-@router.get("/me", response_model=ResultSchema[GetUserTeamResponseDTO])
+@router.get("/me", response_model=ResultSchema[ListTeamsDisplayResponseDTO])
 @format_response
 async def get_user_team(
     handler: GetUserTeamHandler = Depends(get_user_team_handler),
-    _: str = Depends(RequireRoles(["common_user", "admin"], [])),  
+    _: str = Depends(RequireRoles(["common_user", "admin"], [])),
 ) -> Any:
     current_user = user_context.get()
-    if not current_user or not hasattr(current_user, 'id'):
+    if not current_user or not hasattr(current_user, "id"):
         raise HTTPException(401, "unauthenticated user")
-    
-    return handler.execute(str(current_user.id))
+
+    return await handler.execute(str(current_user.id))
 
 
 @router.patch(
@@ -120,7 +120,7 @@ async def get_active_users(
 @format_response
 def get_team_detail(
     team_id: int,
-    _=Depends(RequireRoles(["common_user", "admin"], [])),
+    _=Depends(RequireRoles(["admin"], [])),
     use_case: HandlerInterface = Depends(get_team_detail_handler),
 ) -> Any:
     return use_case.execute(team_id)
@@ -185,3 +185,4 @@ def delete_team(
     use_case: HandlerInterface = Depends(get_delete_team_handler),
 ) -> Any:
     return use_case.execute(_get_current_user_id(), team_id)
+
