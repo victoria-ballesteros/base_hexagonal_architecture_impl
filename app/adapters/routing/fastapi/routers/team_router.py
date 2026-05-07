@@ -11,9 +11,11 @@ from app.adapters.database.dependencies import (
     get_delete_team_handler,
     get_delete_team_invitation_handler,
     get_list_my_team_invitations_handler,
+    get_list_teams_table_handler,
     get_list_teams_handler,
     get_send_team_invitations_handler,
     get_team_detail_handler,
+    get_upload_team_repository_link_handler,
 )
 from app.adapters.database.dependencies import (
     get_user_team_handler,
@@ -29,9 +31,12 @@ from app.domain.dtos.team_dto import (
     DeleteTeamResponseDTO,
     GetTeamDetailResponseDTO,
     ListMyTeamInvitationsResponseDTO,
+    ListTeamsTableResponseDTO,
     ListTeamsDisplayResponseDTO,
     SendTeamInvitationsInputDTO,
     SendTeamInvitationsResponseDTO,
+    UploadTeamRepositoryLinkInputDTO,
+    UploadTeamRepositoryLinkResponseDTO,
 )
 from app.domain.exceptions.base_exceptions import UnauthorizedException
 from app.ports.driving.handler_interface import HandlerInterface
@@ -66,6 +71,16 @@ async def list_teams(
     return await use_case.execute()
 
 
+
+@router.get("/table", response_model=ResultSchema[ListTeamsTableResponseDTO])
+@format_response
+def list_teams_table(
+    _=Depends(RequireRoles(["admin"], [])),
+    use_case: HandlerInterface = Depends(get_list_teams_table_handler),
+) -> Any:
+    return use_case.execute()
+
+
 @router.get("/me", response_model=ResultSchema[ListTeamsDisplayResponseDTO])
 @format_response
 async def get_user_team(
@@ -77,6 +92,19 @@ async def get_user_team(
         raise HTTPException(401, "unauthenticated user")
 
     return await handler.execute(str(current_user.id))
+
+
+@router.patch(
+    "/me/repository-link",
+    response_model=ResultSchema[UploadTeamRepositoryLinkResponseDTO],
+)
+@format_response
+def upload_team_repository_link(
+    data: UploadTeamRepositoryLinkInputDTO,
+    _=Depends(RequireRoles(["common_user"], [])),
+    use_case: HandlerInterface = Depends(get_upload_team_repository_link_handler),
+) -> Any:
+    return use_case.execute(_get_current_user_id(), data)
 
 
 @router.get("/users")

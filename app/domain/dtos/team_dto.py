@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
+import re
 
-from pydantic import BaseModel, Field  # type: ignore
+from pydantic import BaseModel, Field, field_validator  # type: ignore
 
 from app.domain.dtos.user_dto import UserResponseDTO
 from app.domain.enums import TeamRequestStatus
@@ -70,12 +71,34 @@ class CreateTeamResponseDTO(BaseModel):
     team: TeamResponseDTO = Field(...)
 
 
+class UploadTeamRepositoryLinkInputDTO(BaseModel):
+    repository_link: str = Field(..., min_length=1, max_length=255)
+
+    @field_validator("repository_link")
+    @classmethod
+    def validate_github_repository_link(cls, value: str) -> str:
+        normalized_value = value.strip()
+        github_repository_pattern = (
+            r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\.git)?/?$"
+        )
+        if not re.fullmatch(github_repository_pattern, normalized_value):
+            raise ValueError("repository_link must be a valid GitHub repository URL")
+        return normalized_value
+
+
+class UploadTeamRepositoryLinkResponseDTO(BaseModel):
+    message: str = Field(default="Repository link uploaded successfully")
+    team: TeamResponseDTO = Field(...)
+
+
 class SendTeamInvitationsInputDTO(BaseModel):
     usernames: list[str] = Field(..., min_length=1, description="Usernames to invite")
 
 
 class AssignProjectEvaluatorInputDTO(BaseModel):
-    user_id: int = Field(..., gt=0, description="User identifier to set as project evaluator")
+    user_id: int = Field(
+        ..., gt=0, description="User identifier to set as project evaluator"
+    )
 
 
 class AssignProjectEvaluatorResponseDTO(BaseModel):
@@ -164,6 +187,17 @@ class ListTeamsDisplayResponseDTO(BaseModel):
     teams: list[TeamListItemDisplayDTO] = Field(default_factory=list)
 
 
+class TeamTableRowDTO(BaseModel):
+    team_name: str = Field(...)
+    leader_name: str | None = Field(default=None)
+    evaluator: str | None = Field(default=None)
+    repository_link: str | None = Field(default=None)
+    status: str = Field(...)
+    score: int | None = Field(default=None)
+    feedback: str | None = Field(default=None)
+    updated_at: datetime | None = Field(default=None)
+
+
 class TeamDetailDTO(BaseModel):
     team: TeamResponseDTO = Field(...)
     leader: UserResponseDTO | None = Field(default=None)
@@ -187,6 +221,7 @@ class UserListDTO(BaseModel):
     username: str
     email: str
     name: str
+
 
 class TeamMemberDTO(BaseModel):
     user_id: str

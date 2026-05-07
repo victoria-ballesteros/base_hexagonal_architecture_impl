@@ -61,7 +61,11 @@ from app.core.use_case.team.list_my_team_invitations import (
 )
 from app.core.use_case.team.accept_team_invitation import AcceptTeamInvitationHandler
 from app.core.use_case.team.list_teams import ListTeamsHandler
+from app.core.use_case.team.list_teams_table import ListTeamsTableHandler
 from app.core.use_case.team.get_team_detail import GetTeamDetailHandler
+from app.core.use_case.team.upload_team_repository_link import (
+    UploadTeamRepositoryLinkHandler,
+)
 
 from app.adapters.routing.utils.context import user_context
 
@@ -297,8 +301,20 @@ def get_list_teams_handler(db: Session = Depends(get_db)) -> ListTeamsHandler:
     return ListTeamsHandler(get_team_repository(db), get_supabase_client())
 
 
+def get_list_teams_table_handler(
+    db: Session = Depends(get_db),
+) -> ListTeamsTableHandler:
+    return ListTeamsTableHandler(get_team_repository(db))
+
+
 def get_team_detail_handler(db: Session = Depends(get_db)) -> GetTeamDetailHandler:
     return GetTeamDetailHandler(get_team_repository(db), get_role_repository(db))
+
+
+def get_upload_team_repository_link_handler(
+    db: Session = Depends(get_db),
+) -> UploadTeamRepositoryLinkHandler:
+    return UploadTeamRepositoryLinkHandler(get_team_repository(db))
 
 
 def get_send_team_invitations_handler(
