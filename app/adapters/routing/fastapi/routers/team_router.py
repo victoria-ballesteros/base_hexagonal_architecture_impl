@@ -92,7 +92,7 @@ async def get_active_users(
 @format_response
 def get_team_detail(
     team_id: int,
-    _=Depends(RequireRoles(["common_user", "admin"], [])),
+    _=Depends(RequireRoles(["admin"], [])),
     use_case: HandlerInterface = Depends(get_team_detail_handler),
 ) -> Any:
     return use_case.execute(team_id)
