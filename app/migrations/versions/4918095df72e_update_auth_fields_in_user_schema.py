@@ -9,7 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy import inspect, text
+from sqlalchemy import inspect
 
 
 # revision identifiers, used by Alembic.
@@ -21,8 +21,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     conn = op.get_bind()
-    query = text("SELECT column_name FROM information_schema.columns WHERE table_name = 'user' AND table_schema = 'public'")
-    existing_columns = [row[0] for row in conn.execute(query)]
+    inst = inspect(conn)
+    existing_columns = [c["name"] for c in inst.get_columns("user")]
 
     if "is_verified" not in existing_columns:
         op.add_column(
