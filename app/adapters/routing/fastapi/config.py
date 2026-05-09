@@ -37,13 +37,17 @@ def setup_routes(app: FastAPI) -> None:
 
 
 def setup_middleware(app: FastAPI) -> None:
-    origins = ["*"]  # TODO: Update with specific origins in production
+    origins = [
+        "http://localhost:4321",  # Frontend local
+        "http://127.0.0.1:4321",
+    ]
 
     app.add_middleware(UserContextMiddleware)
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
+        allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
