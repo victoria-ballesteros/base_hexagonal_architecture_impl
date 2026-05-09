@@ -4,7 +4,8 @@ from jose import JWTError, jwt  # type: ignore
 from app.adapters.database.postgres.repositories.role_repository import RoleRepository
 from app.adapters.routing.utils.granular_permissions import GranularFunctions
 from app.domain.dtos.user_dto import UserDTO
-from fastapi import Depends, Header  # type: ignore
+from fastapi import Depends, Header, Security  # type: ignore
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials  
 
 from app.core.use_case.test.delete_test import DeleteTestByIdHandler
 from app.core.use_case.test.get_test import GetTestByIdHandler
@@ -69,6 +70,11 @@ from app.core.use_case.team.upload_team_repository_link import (
 
 from app.adapters.routing.utils.context import user_context
 
+# ====================================================================
+# Authorization
+# ====================================================================
+
+security_scheme = HTTPBearer(auto_error=False)
 
 # Repositories
 
@@ -212,12 +218,13 @@ def get_evaluators_handler(
 
 
 async def get_current_user_payload(
-    authorization: str | None = Header(None, alias="Authorization"),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme),
 ) -> dict[str, Any]:
     """Validates the JWT from the Authorization header and returns the payload. Requires active session."""
-    if not authorization or not authorization.startswith("Bearer "):
+    if not credentials or credentials.scheme.lower() != "bearer":
         raise UnauthorizedException("Token not sent or invalid format")
-    token = authorization.removeprefix("Bearer ").strip()
+
+    token = credentials.credentials
     if not token:
         raise UnauthorizedException("Token not sent or invalid format")
     try:
