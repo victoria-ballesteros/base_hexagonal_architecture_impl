@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field  # type: ignore
 
-from app.domain.enums import UserStatus
+from app.domain.enums import ProgrammingLanguage, UserStatus
 
 
 class LoginInputDTO(BaseModel):
@@ -26,7 +26,8 @@ class SignOutResponseDTO(BaseModel):
 class RegisterUserInputDTO(BaseModel):
     name: str = Field(..., min_length=1)
     email: str = Field(..., min_length=1)
-    password: str = Field(..., min_length=1)
+    programming_language: ProgrammingLanguage = Field(...)
+    github_profile: str = Field(..., min_length=1)
     portrait: str | None = Field(default=None)
 
 
@@ -34,6 +35,8 @@ class CreateUserDTO(BaseModel):
     name: str
     email: str
     password_hash: str
+    programming_language: ProgrammingLanguage
+    github_profile: str
     portrait: str | None = None
     status: UserStatus | None = None
     verification_token: str | None = None
@@ -49,6 +52,8 @@ class UserDTO(BaseModel):
     name: str | None = Field(default=None)
     email: str | None = Field(default=None)
     password_hash: str | None = Field(default=None)
+    programming_language: ProgrammingLanguage | None = Field(default=None)
+    github_profile: str | None = Field(default=None)
     portrait: str | None = Field(default=None)
     status: UserStatus | None = Field(default=None)
     category_id: int | None = Field(default=None)
@@ -65,6 +70,8 @@ class UserDTO(BaseModel):
             name=getattr(orm_obj, "name", None),
             email=getattr(orm_obj, "email", None),
             password_hash=getattr(orm_obj, "password_hash", None),
+            programming_language=getattr(orm_obj, "programming_language", None),
+            github_profile=getattr(orm_obj, "github_profile", None),
             portrait=getattr(orm_obj, "portrait", None),
             status=getattr(orm_obj, "status", None),
             category_id=getattr(orm_obj, "category_id", None),
@@ -80,6 +87,8 @@ class UserResponseDTO(BaseModel):
     role_id: int | None = Field(default=None)
     name: str | None = Field(default=None)
     email: str | None = Field(default=None)
+    programming_language: ProgrammingLanguage | None = Field(default=None)
+    github_profile: str | None = Field(default=None)
     portrait: str | None = Field(default=None)
     status: UserStatus | None = Field(default=None)
     category_id: int | None = Field(default=None)
@@ -92,6 +101,8 @@ class UserResponseDTO(BaseModel):
             role_id=getattr(orm_obj, "role_id", None),
             name=getattr(orm_obj, "name", None),
             email=getattr(orm_obj, "email", None),
+            programming_language=getattr(orm_obj, "programming_language", None),
+            github_profile=getattr(orm_obj, "github_profile", None),
             portrait=getattr(orm_obj, "portrait", None),
             status=getattr(orm_obj, "status", None),
             category_id=getattr(orm_obj, "category_id", None),
@@ -115,3 +126,5 @@ class UserListDTO(BaseModel):
     username: str
     email: str
     name: str
+    programming_language: ProgrammingLanguage | None = None
+    github_profile: str | None = None

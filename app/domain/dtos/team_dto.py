@@ -6,7 +6,7 @@ import re
 from pydantic import BaseModel, Field, field_validator  # type: ignore
 
 from app.domain.dtos.user_dto import UserResponseDTO
-from app.domain.enums import TeamRequestStatus
+from app.domain.enums import ProgrammingLanguage, TeamRequestStatus
 
 
 class TeamResponseDTO(BaseModel):
@@ -198,6 +198,11 @@ class TeamTableRowDTO(BaseModel):
     updated_at: datetime | None = Field(default=None)
 
 
+class ListTeamsTableResponseDTO(BaseModel):
+    message: str = Field(default="Teams table retrieved successfully")
+    teams: list[TeamTableRowDTO] = Field(default_factory=list)
+
+
 class TeamDetailDTO(BaseModel):
     team: TeamResponseDTO = Field(...)
     leader: UserResponseDTO | None = Field(default=None)
@@ -221,6 +226,8 @@ class UserListDTO(BaseModel):
     username: str
     email: str
     name: str
+    programming_language: ProgrammingLanguage | None = None
+    github_profile: str | None = None
 
 
 class TeamMemberDTO(BaseModel):

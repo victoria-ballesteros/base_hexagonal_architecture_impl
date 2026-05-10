@@ -20,6 +20,30 @@ class UserStatus(int, Enum):
     ACTIVE = 1
 
 
+class ProgrammingLanguage(str, Enum):
+    JAVASCRIPT = "JavaScript"
+    TYPESCRIPT = "TypeScript"
+    PYTHON = "Python"
+    JAVA = "Java"
+    C_SHARP = "C#"
+    PHP = "PHP"
+    GO = "GO"
+    RUBY = "Ruby"
+    RUST = "Rust"
+    ELIXIR = "ELixir"
+    C_PLUS_PLUS = "C++"
+    KOTLIN = "Kotlin"
+    SCALA = "Scala"
+    SWIFT = "Swift"
+    CLOJURE = "Clojure"
+    ERLANG = "Erlang"
+    HASKELL = "Haskell"
+    DART = "Dart"
+    PERL = "Perl"
+    R = "R"
+    JULIA = "Julia"
+
+
 class TeamRequestStatus(int, Enum):
     DENIED = -1
     PENDING = 0

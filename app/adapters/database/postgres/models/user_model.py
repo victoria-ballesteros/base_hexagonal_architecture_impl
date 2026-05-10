@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Enum, ForeignKey, Table, Boolean, DateTime
 
 from app.adapters.database.postgres.connection import Base
-from app.domain.enums import UserStatus, TeamRequestStatus
+from app.domain.enums import ProgrammingLanguage, UserStatus, TeamRequestStatus
 
 
 user_team_association=Table(
@@ -29,6 +29,8 @@ class User(Base):
     name=Column(String, nullable=False)
     email=Column(String, nullable=False)
     password_hash=Column(String, nullable=False)
+    programming_language=Column(Enum(ProgrammingLanguage), nullable=True)
+    github_profile=Column(String, nullable=True)
     portrait=Column(String)
     status=Column(Enum(UserStatus), nullable=False)
 

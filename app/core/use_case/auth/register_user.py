@@ -16,6 +16,8 @@ from app.ports.driven.database.postgres.user_repository_abc import UserRepositor
 from app.ports.driven.email.email_sender_interface import EmailSenderInterface
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+PASSWORD_LENGTH = 12
+PASSWORD_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*"
 
 
 class RegisterUserHandler(HandlerInterface):
@@ -30,7 +32,8 @@ class RegisterUserHandler(HandlerInterface):
         self._email_sender = email_sender
 
     def execute(self, data: RegisterUserInputDTO) -> UserResponseDTO:
-        password_hash = pwd_context.hash(data.password)
+        temporary_password = self._generate_temporary_password()
+        password_hash = pwd_context.hash(temporary_password)
         normalized_email = data.email.strip().lower()
 
         token = secrets.token_urlsafe(32)
@@ -46,6 +49,8 @@ class RegisterUserHandler(HandlerInterface):
                 name=data.name,
                 email=normalized_email,
                 password_hash=password_hash,
+                programming_language=data.programming_language,
+                github_profile=data.github_profile,
                 portrait=data.portrait,
                 status=UserStatus.PENDING,
                 verification_token=token,
@@ -64,6 +69,12 @@ class RegisterUserHandler(HandlerInterface):
             to_email=user.email,
             user_name=user.name,
             verify_link=verify_link,
+            temporary_password=temporary_password,
         )
 
         return user
+
+    def _generate_temporary_password(self) -> str:
+        return "".join(
+            secrets.choice(PASSWORD_ALPHABET) for _ in range(PASSWORD_LENGTH)
+        )
