@@ -187,6 +187,11 @@ class ListTeamsDisplayResponseDTO(BaseModel):
     teams: list[TeamListItemDisplayDTO] = Field(default_factory=list)
 
 
+class ListTeamsTableResponseDTO(BaseModel):
+    message: str = Field(default="Teams table retrieved successfully")
+    teams: list[TeamTableRowDTO] = Field(default_factory=list)
+
+
 class TeamTableRowDTO(BaseModel):
     team_name: str = Field(...)
     leader_name: str | None = Field(default=None)

@@ -38,7 +38,7 @@ async def upload_portrait(
     file: UploadFile = File(..., description="Profile picture (PNG)"),
     user_id: str = Form(..., description="User ID"),
     handler: UploadPortraitHandler = Depends(get_upload_portrait_handler),
-    _=Depends(RequireRoles(["common_user", "admin"], [])),
+    # _=Depends(RequireRoles(["common_user", "admin"], [])),  # PARA REVERTIR: eliminar esta línea
 ) -> Any:
     content = await file.read()
     return await handler.execute(
@@ -55,7 +55,7 @@ async def upload_portrait(
 async def delete_portrait(
     user_id: str = Path(..., description="User ID"),
     handler: DeletePortraitHandler = Depends(get_delete_portrait_handler),
-    _=Depends(RequireRoles(["common_user", "admin"], [])),
+    # _=Depends(RequireRoles(["common_user", "admin"], [])),  # PARA REVERTIR: eliminar esta línea
 ) -> Any:
     return await handler.execute(DeletePortraitDTO(user_id=user_id))
 
