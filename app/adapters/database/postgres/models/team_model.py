@@ -15,6 +15,7 @@ class Team(Base):
     cloud_repo_link = Column(String)
     status = Column(Integer, nullable=False, server_default="0")
     feedback = Column(String)
+    description = Column(String)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())

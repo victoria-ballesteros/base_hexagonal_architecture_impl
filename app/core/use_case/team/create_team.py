@@ -54,10 +54,11 @@ class CreateTeamHandler(HandlerInterface):
             )
 
         team = self._team_repository.create_team(
-            name=f"{leader.username}-team",
+            name=data.name,
             edition_id=edition_id,
             category_id=data.category_id,
             leader_id=leader_user_id,
+            description=data.description,
         )
 
         return CreateTeamResponseDTO(team=team)

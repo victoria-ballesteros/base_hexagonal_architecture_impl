@@ -84,6 +84,7 @@ class TeamRepositoryInterface(ABC):
         edition_id: int,
         category_id: int,
         leader_id: int,
+        description: str,
     ) -> TeamResponseDTO:
         raise NotImplementedError
 

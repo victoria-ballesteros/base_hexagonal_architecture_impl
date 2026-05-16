@@ -403,6 +403,7 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
         edition_id: int,
         category_id: int,
         leader_id: int,
+        description: str,
     ) -> TeamResponseDTO:
         team = Team(
             name=name,
@@ -417,6 +418,7 @@ class TeamRepository(TeamRepositoryInterface, TeamQueryInterface):
             evaluation_id=None,
             assigned_evaluator_id=leader_id,
             project_evaluator_id=None,
+            description=description,
         )
 
         try:

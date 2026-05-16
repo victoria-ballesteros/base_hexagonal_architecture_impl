@@ -64,6 +64,8 @@ class TeamInvitationSummaryDTO(BaseModel):
 
 class CreateTeamInputDTO(BaseModel):
     category_id: int = Field(..., gt=0, description="Category identifier")
+    name: str = Field(..., min_length=1, max_length=30)
+    description: str = Field(..., min_length=1, max_length=100)
 
 
 class CreateTeamResponseDTO(BaseModel):
