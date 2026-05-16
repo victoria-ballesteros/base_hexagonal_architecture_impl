@@ -25,21 +25,25 @@ class SendTeamInvitationsHandler(HandlerInterface):
         sender_user_id: int,
         data: SendTeamInvitationsInputDTO,
     ) -> SendTeamInvitationsResponseDTO:
+        team = self._team_repository.get_team_by_leader_id(sender_user_id)
+        if team is None:
+            raise DomainException(
+                "The authenticated user does not lead any team",
+                TEAM_LEADER_TEAM_NOT_FOUND,
+            )
+        
         normalized_usernames: list[str] = []
         duplicated_usernames: list[str] = []
-        seen_usernames: set[str] = set()
 
         for username in data.usernames:
             normalized_username = username.strip().lower()
             if not normalized_username:
                 continue
 
-            if normalized_username in seen_usernames:
+            if normalized_username in normalized_usernames:
                 duplicated_usernames.append(normalized_username)
-                continue
-
-            seen_usernames.add(normalized_username)
-            normalized_usernames.append(normalized_username)
+            else:
+                normalized_usernames.append(normalized_username)
 
         if not normalized_usernames:
             raise DomainException(
@@ -47,16 +51,9 @@ class SendTeamInvitationsHandler(HandlerInterface):
                 TEAM_REQUEST_EMPTY_USERNAMES,
             )
 
-        team = self._team_repository.get_team_by_leader_id(sender_user_id)
-        if team is None:
-            raise DomainException(
-                "The authenticated user does not lead any team",
-                TEAM_LEADER_TEAM_NOT_FOUND,
-            )
-
         users = self._team_repository.get_users_by_usernames(normalized_usernames)
         users_by_username = {
-            (user.username or "").strip().lower(): user for user in users
+            (user.username): user for user in users if user.username is not None
         }
 
         not_found_usernames: list[str] = []

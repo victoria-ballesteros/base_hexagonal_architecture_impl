@@ -229,7 +229,6 @@ class DeleteTeamResponseDTO(BaseModel):
 
 class UserListDTO(BaseModel):
     username: str
-    email: str
     name: str
     programming_language: ProgrammingLanguage | None = None
     github_profile: str | None = None

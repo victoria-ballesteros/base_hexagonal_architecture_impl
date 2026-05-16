@@ -21,7 +21,7 @@ from app.domain.exceptions.base_exceptions import UnauthorizedException
 from app.ports.driving.handler_interface import HandlerInterface
 from app.adapters.routing.utils.context import user_context
 
-router = APIRouter(prefix="/teams", tags=["Evaluations"])
+router = APIRouter(prefix="/evaluations", tags=["Evaluations"])
 
 
 def _get_current_user_id() -> int:
@@ -46,7 +46,7 @@ def assign_project_evaluator(
 
 
 @router.post(
-    "/{team_id}/score-feedback",
+    "/score-feedback/{team_id}",
     response_model=ResultSchema[UpdateTeamScoreFeedbackResponseDTO],
 )
 @format_response

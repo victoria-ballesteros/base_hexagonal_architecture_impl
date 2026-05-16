@@ -121,10 +121,3 @@ class RefreshTokenResponseDTO(BaseModel):
 
 class SignOutInputDTO(BaseModel):
     refresh_token: str = Field(..., min_length=20)
-
-class UserListDTO(BaseModel):
-    username: str
-    email: str
-    name: str
-    programming_language: ProgrammingLanguage | None = None
-    github_profile: str | None = None
