@@ -24,6 +24,7 @@ class TeamResponseDTO(BaseModel):
     assigned_evaluator_id: int | None = Field(default=None)
     project_evaluator_id: int | None = Field(default=None)
     votes_qty: int | None = Field(default=None)
+    description: str |None = Field(default=None)
 
     @classmethod
     def from_orm(cls, orm_obj: object) -> "TeamResponseDTO":
@@ -42,6 +43,7 @@ class TeamResponseDTO(BaseModel):
             assigned_evaluator_id=getattr(orm_obj, "assigned_evaluator_id", None),
             project_evaluator_id=getattr(orm_obj, "project_evaluator_id", None),
             votes_qty=getattr(orm_obj, "votes_qty", None),
+            description=getattr(orm_obj, "description", None),
         )
 
 
