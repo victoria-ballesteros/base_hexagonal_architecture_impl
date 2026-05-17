@@ -11,7 +11,8 @@ class StorageBucketSupabase(StorageBucketInterfaceABC):
 
     BUCKET_CONFIG = {
         "images": {"allowed_types": ["image/png"]},
-        "exercises": {"allowed_types": ["application/pdf"]}
+        "exercises": {"allowed_types": ["application/pdf"]},
+        "cvs": {"allowed_types": ["application/pdf"]},
     }
     
     def __init__(self, supabase_client):

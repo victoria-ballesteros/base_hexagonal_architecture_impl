@@ -1,6 +1,10 @@
+from app.core.use_case.bucket.get_cv import GetCVHandler
+from app.core.use_case.bucket.upload_cv import UploadCVHandler
 from fastapi import APIRouter, Depends, File, UploadFile, Form, Path  # type: ignore
 from io import BytesIO
 from app.domain.dtos.bucket_dto import (
+    GetCVDTO,
+    UploadCVDTO,
     UploadPortraitDTO,
     UploadSponsorLogoDTO,
     UploadExerciseDTO,
@@ -18,6 +22,8 @@ from app.core.use_case.bucket.get_sponsor_logo import GetSponsorLogoHandler
 from app.core.use_case.bucket.get_exercise import GetExerciseHandler
 from app.adapters.database.dependencies import (
     RequireRoles,
+    get_get_cv_handler,
+    get_upload_cv_handler,
     get_upload_portrait_handler,
     get_delete_portrait_handler,
     get_upload_sponsor_logo_handler,
@@ -28,6 +34,8 @@ from app.adapters.database.dependencies import (
 )
 from app.adapters.routing.utils.decorators import format_response
 from typing import Any
+
+from app.adapters.routing.fastapi.routers.evaluation_router import _get_current_user_id
 
 bucket_router = APIRouter(prefix="/bucket", tags=["Files"])
 
@@ -122,3 +130,27 @@ async def upload_exercise(
             content_type=file.content_type,
         )
     )
+
+@bucket_router.post("/cv/upload")
+@format_response
+async def upload_cv(
+    file: UploadFile = File(..., description="CV PDF"),
+    handler: UploadCVHandler = Depends(get_upload_cv_handler),
+    _=Depends(RequireRoles([], [])),
+) -> Any:
+    content = await file.read()
+    return await handler.execute(
+        UploadCVDTO(
+            user_id=str(_get_current_user_id()),
+            file_data=BytesIO(content),
+            content_type=file.content_type,
+        )
+    )
+
+@bucket_router.get("/cv/{user_id}")
+@format_response
+async def get_cv(
+    user_id: str,
+    handler: GetCVHandler = Depends(get_get_cv_handler),
+) -> Any:
+    return await handler.execute(GetCVDTO(user_id=user_id))

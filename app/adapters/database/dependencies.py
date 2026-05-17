@@ -3,9 +3,11 @@ from sqlalchemy.orm import Session
 from jose import JWTError, jwt  # type: ignore
 from app.adapters.database.postgres.repositories.role_repository import RoleRepository
 from app.adapters.routing.utils.granular_permissions import GranularFunctions
+from app.core.use_case.bucket.get_cv import GetCVHandler
+from app.core.use_case.bucket.upload_cv import UploadCVHandler
 from app.domain.dtos.user_dto import UserDTO
-from fastapi import Depends, Header, Security  # type: ignore
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials  
+from fastapi import Depends # type: ignore
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials   # type: ignore
 
 from app.core.use_case.test.delete_test import DeleteTestByIdHandler
 from app.core.use_case.test.get_test import GetTestByIdHandler
@@ -146,6 +148,18 @@ def get_upload_exercise_handler(
     storage: StorageBucketInterfaceABC = Depends(get_supabase_client),
 ) -> UploadExerciseHandler:
     return UploadExerciseHandler(storage)
+
+
+def get_upload_cv_handler(
+    storage: StorageBucketInterfaceABC = Depends(get_supabase_client),
+) -> UploadCVHandler:
+    return UploadCVHandler(storage)
+
+
+def get_get_cv_handler(
+    storage: StorageBucketInterfaceABC = Depends(get_supabase_client),
+) -> GetCVHandler:
+    return GetCVHandler(storage)
 
 
 def get_login_user_handler(db: Session = Depends(get_db)) -> LoginUserHandler:

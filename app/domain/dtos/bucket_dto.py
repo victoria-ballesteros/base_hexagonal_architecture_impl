@@ -40,3 +40,14 @@ class GetExerciseDTO(BaseModel):
 
 class DeleteExerciseDTO(BaseModel):
     exercise_id: str = Field(..., description="ID del ejercicio")
+
+class UploadCVDTO(BaseModel):
+    user_id: str
+    file_data: BytesIO
+    content_type: str
+
+    class Config:
+        arbitrary_types_allowed = True
+
+class GetCVDTO(BaseModel):
+    user_id: str
