@@ -152,5 +152,6 @@ async def upload_cv(
 async def get_cv(
     user_id: str,
     handler: GetCVHandler = Depends(get_get_cv_handler),
+    _=Depends(RequireRoles(["sponsor", "admin"], [])),
 ) -> Any:
     return await handler.execute(GetCVDTO(user_id=user_id))
