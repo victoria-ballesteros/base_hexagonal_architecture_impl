@@ -1,18 +1,25 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
-
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy.sql import func
 from app.adapters.database.postgres.connection import Base
 
 
 class Team(Base):
-    __tablename__="team"
+    __tablename__ = "team"
 
-    id=Column(Integer, primary_key=True)
-    name=Column(String, nullable=False)
-    logo=Column(String)
-    score=Column(Integer)
-    standing_position=Column(Integer)
-    cloud_repo_link=Column(String)
-    
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    logo = Column(String)
+    score = Column(Integer)
+    votes_qty = Column(Integer, nullable=True)
+    standing_position = Column(Integer)
+    cloud_repo_link = Column(String)
+    status = Column(Integer, nullable=False, server_default="0")
+    feedback = Column(String)
+    description = Column(String)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+
     edition_id = Column(
         Integer, ForeignKey("edition.id", ondelete="CASCADE"), nullable=False
     )
@@ -23,5 +30,8 @@ class Team(Base):
         Integer, ForeignKey("evaluation.id", ondelete="SET NULL"), nullable=True
     )
     assigned_evaluator_id = Column(
+        Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
+    project_evaluator_id = Column(
         Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
     )
